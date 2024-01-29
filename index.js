@@ -1,5 +1,4 @@
 import express from 'express';
-import fs from "fs";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -58,7 +57,7 @@ app.get('/breeds/:id', async (req, res) => {
     //console.log(param)
     try {
         const apiResponse = await getDogAPIResponse(param.id);
-       // console.log(apiResponse.data);
+        // console.log(apiResponse.data);
         const dogAttributes = apiResponse.data.attributes;
         const html = `
         <div>
@@ -73,6 +72,22 @@ app.get('/breeds/:id', async (req, res) => {
         console.log(err);
         res.status(500).send("Server Error");
     }
+});
+
+/*
+Part 4: Interactive Breed Selection
+
+Goal: Create an interactive list of dog breeds that displays detailed information upon selection.
+
+Task:
+[x] Render the list of breeds as selectable elements in the HTML document.
+[x] Add an event listener to each breed that fetches and displays detailed information when clicked.
+*/
+app.get('/breed-list', async (req, res) => {
+    const apiResponse = await getDogAPIResponse();
+    res.type('text/html');
+    res.send(apiResponse.data.map((dog) => `<li><a href="/breeds/${dog.id}">${dog.attributes.name}</a></li>`).join(""));
+
 });
 
 app.use((req, res) => {
