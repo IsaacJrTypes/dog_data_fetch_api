@@ -6,10 +6,21 @@
     <!-- Include the Tailwind JS file -->
     <script src="https://cdn.tailwindcss.com"></script>
     <title>Dog Group</title>
+    <style>
+        body {
+  background-image: url("https://static.vecteezy.com/system/resources/previews/000/464/040/large_2x/vector-dog-seamless-pattern-theme-bone-paw-foot-print-for-use-as-wallpaper-or-background.jpg");
+     background-color: rgba(255, 255, 255, 0.1);
+}
+    </style>
 </head>
 <body>
-<h1>Dog Groups</h1>
- <ul>{{%dogList%}}</ul>
+<main
+      class="grid min-h-screen place-items-center px-6 py-24 sm:py-32 lg:px-8">
+      <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl ">Dog Groups</h1>
+      <ul class="max-w-xs flex flex-col">
+        {{%dogList%}}
+      </ul>
+    </main>
     
 <script>
 

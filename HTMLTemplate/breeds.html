@@ -1,18 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Include the Tailwind JS file -->
     <script src="https://cdn.tailwindcss.com"></script>
     <title>Breeds</title>
+    <style>
+        body {
+  background-image: url("https://static.vecteezy.com/system/resources/previews/000/464/040/large_2x/vector-dog-seamless-pattern-theme-bone-paw-foot-print-for-use-as-wallpaper-or-background.jpg");
+     background-color: rgba(255, 255, 255, 0.1);
+}
+    </style>
 </head>
-<body>
- <ul>{{%dogList%}}</ul>
-    
-<script>
 
-</script>
+<body>
+    <main class="grid min-h-screen place-items-center px-6 py-24 sm:py-32 lg:px-8">
+        <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl ">Dog Breeds</h1>
+        
+        <ul class="max-w-xs flex flex-col rounded-b-lg border-2 border-gray-300">
+            {{%dogList%}}
+            <!-- <div class="flex mt-4 ">
+           
+            <a href="#" class="flex-grow flex items-center justify-center h-8 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700">
+                Previous
+            </a>
+
+           
+            <a href="#" class="flex-grow flex  items-center justify-center h-8 ms-3 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700">
+                Next
+            </a>
+            </div> -->
+        </ul>
+    </main>
 </body>
 
 </html>

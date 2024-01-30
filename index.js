@@ -4,7 +4,7 @@ import fs from 'fs';
 const app = express();
 const port = process.env.PORT || 3000;
 
-async function getDogAPIResponse(param = "") {
+async function getDogAPIResponse(param = "",page="") {
     try {
         let response;
         if (param === '') {
@@ -15,7 +15,6 @@ async function getDogAPIResponse(param = "") {
 
         } else if (param === 'groups') {
             response = await fetch('https://dogapi.dog/api/v2/groups')
-
         } else {
             response = await fetch('https://dogapi.dog/api/v2/breeds/' + param);
         }
@@ -42,7 +41,8 @@ app.get('/breeds', async (req, res) => {
     try {
         const apiResponse = await getDogAPIResponse();
         const htmlFile = fs.readFileSync('./HTMLTemplate/breeds.html','utf8')
-        const dogListhtml = apiResponse.data.map((dog) => `<li><a href= "/breeds/${dog.id}">${dog.attributes.name}</a></li>`).join("")
+        const tailwindListCSS = "inline-flex items-center gap-x-2 py-3 px-4 text-sm font-medium bg-white border border-gray-200 text-gray-800 -mt-px first:rounded-t-lg first:mt-0 last:rounded-b-lg"
+        const dogListhtml = apiResponse.data.map((dog) => `<li class="${tailwindListCSS}"><a href= "/breeds/${dog.id}">${dog.attributes.name}</a></li>`).join("")
         const updatedHTML = htmlFile.replace('{{%dogList%}}',dogListhtml)
         
         res.type('text/html');
@@ -53,7 +53,7 @@ app.get('/breeds', async (req, res) => {
         res.status(500).send("Server Error");
     }
 });
-
+ 
 /*
 Part 3: Displaying Detailed Breed Information
 
@@ -112,7 +112,7 @@ Fetch and display information about different dog groups.
 
 Tasks:
 [x] Use the /facts endpoint to fetch dog facts.
-[] Display these facts in an interesting format on the webpage.
+[x] Display these facts in an interesting format on the webpage.
 [x] Use the /groups endpoint to fetch information about dog groups and display it.
 */
 app.get('/facts', async (req, res) => {
@@ -137,9 +137,10 @@ app.get('/groups', async(req,res) => {
     try {
         const apiResponse = await getDogAPIResponse('groups')
         let htmlFile = fs.readFileSync('./HTMLTemplate/groups.html', 'utf8')
+        const tailwindListCSS = "inline-flex items-center gap-x-2 py-3 px-4 text-sm font-medium bg-white border border-gray-200 text-gray-800 -mt-px first:rounded-t-lg first:mt-0 last:rounded-b-lg"
         console.log(apiResponse.data)
        
-        const dogGroupList = apiResponse.data.map((group) => '<li>' + group.attributes.name + '</li>').join('')
+        const dogGroupList = apiResponse.data.map((group) => `<li class='${tailwindListCSS}'>` + group.attributes.name + '</li>').join('')
         htmlFile = htmlFile.replace('{{%dogList%}}',dogGroupList)
         res.type('text/html')
         res.send(htmlFile);
@@ -152,10 +153,11 @@ app.get('/groups', async(req,res) => {
 })
 
 app.use((req, res) => {
-    res.type("text/plain");
+    const htmlFile = fs.readFileSync('./HTMLTemplate/notFound.html', 'utf8')
+    res.type("text/html");
     res.status(404);
-    res.send("404: Page not found");
-});
+    res.send(htmlFile);
+}); 
 
 app.listen(app.get('port'), () => {
     console.log(`Express running at ${port}`);
