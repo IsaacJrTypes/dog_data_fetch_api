@@ -1,4 +1,5 @@
 import express from 'express';
+import fs from 'fs';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -40,10 +41,15 @@ Task:
 app.get('/breeds', async (req, res) => {
     try {
         const apiResponse = await getDogAPIResponse();
+        const htmlFile = fs.readFileSync('./HTMLTemplate/breeds.html','utf8')
+        const dogListhtml = apiResponse.data.map((dog) => `<li><a href= "/breeds/${dog.id}">${dog.attributes.name}</a></li>`).join("")
+        const updatedHTML = htmlFile.replace('{{%dogList%}}',dogListhtml)
+        
         res.type('text/html');
-        res.send(apiResponse.data.map((dog) => `<li>${dog.attributes.name}</li>`).join(""));
+        res.send(updatedHTML);
 
     } catch (err) {
+        console.log(err)
         res.status(500).send("Server Error");
     }
 });
@@ -66,15 +72,17 @@ app.get('/breeds/:id', async (req, res) => {
         const apiResponse = await getDogAPIResponse(param.id);
         // console.log(apiResponse.data);
         const dogAttributes = apiResponse.data.attributes;
-        const html = `
-        <div>
-        <p>Breed: ${dogAttributes.name}</p>
-        <p>Description: ${dogAttributes.description}</p>
-        <p>Life Span: ${dogAttributes.life.min} - ${dogAttributes.life.max} Years </p>
-        <p>hypoallergenic: ${dogAttributes.hypoallergenic ? "Yes :)" : "No :("}</p>
-        </div>
-        `;
-        res.type('text/html').send(html);
+        let htmlFile = fs.readFileSync('./HTMLTemplate/breed-info.html', 'utf8')
+        //console.log(dogAttributes)
+        // Replace sections of html
+        htmlFile = htmlFile.replace('{{%breedName%}}',dogAttributes.name)
+        htmlFile = htmlFile.replace('{{%description%}}', dogAttributes.description);
+        htmlFile = htmlFile.replace('{{%life.min%}}', dogAttributes.life.min)
+        htmlFile = htmlFile.replace('{{%life.max%}}', dogAttributes.life.max)
+        htmlFile = htmlFile.replace('{{%hypoallergenic%}}', dogAttributes.hypoallergenic? "Yes :)": "No :(")
+
+        res.type('text/html')
+        res.send(htmlFile);
     } catch (err) {
         console.log(err);
         res.status(500).send("Server Error");
@@ -89,19 +97,11 @@ Goal: Create an interactive list of dog breeds that displays detailed informatio
 Task:
 [x] Render the list of breeds as selectable elements in the HTML document.
 [x] Add an event listener to each breed that fetches and displays detailed information when clicked.
+
+Part 2 modified to fit part 4 requirements
+
 */
-app.get('/breed-list', async (req, res) => {
-    try {
-        const apiResponse = await getDogAPIResponse();
-        res.type('text/html');
-        res.send(apiResponse.data.map((dog) => `<li><a href="/breeds/${dog.id}">${dog.attributes.name}</a></li>`).join(""));
-    } catch (err) {
-        console.log(err);
-        res.status(500).send("Server Error");
-    }
 
-
-});
 
 /*
 Part 5: Working with Dog Facts and Groups
@@ -119,16 +119,14 @@ app.get('/facts', async (req, res) => {
     try {
         const apiResponse = await getDogAPIResponse('facts');
         const factObj = apiResponse.data[0];
-        const html = `
-        <div>
-        <p>Fact</p>
-        <p>${factObj.attributes.body}</p>
-        </div>
-        `;
+        console.log(factObj)
+        let htmlFile = fs.readFileSync('./HTMLTemplate/facts.html', 'utf8')
+        htmlFile = htmlFile.replace("{{%dogFact%}}",factObj.attributes.body)
+        
 
         res.type('text/html');
-        res.send(html);
-        console.log(factObj);
+        res.send(htmlFile);
+        //console.log(factObj);
     } catch (err) {
         console.log("Error: ", err);
         res.status(500).send("Server Error");
@@ -138,16 +136,13 @@ app.get('/facts', async (req, res) => {
 app.get('/groups', async(req,res) => {
     try {
         const apiResponse = await getDogAPIResponse('groups')
+        let htmlFile = fs.readFileSync('./HTMLTemplate/groups.html', 'utf8')
         console.log(apiResponse.data)
-        const html = `
-        <div>
-        <p>Dog Groups</p>
-        <ul>${apiResponse.data.map((group) => '<li>'+group.attributes.name+'</li>').join('')}
-        </ul>
-        </div>
-        `
+       
+        const dogGroupList = apiResponse.data.map((group) => '<li>' + group.attributes.name + '</li>').join('')
+        htmlFile = htmlFile.replace('{{%dogList%}}',dogGroupList)
         res.type('text/html')
-        res.send(html);
+        res.send(htmlFile);
 
 
     } catch(err) {
