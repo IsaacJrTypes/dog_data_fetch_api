@@ -4,7 +4,7 @@ import fs from 'fs';
 const app = express();
 const port = process.env.PORT || 3000;
 
-async function getDogAPIResponse(param = "",page="") {
+async function getDogAPIResponse(param = "") {
     try {
         let response;
         if (param === '') {
@@ -14,7 +14,7 @@ async function getDogAPIResponse(param = "",page="") {
             response = await fetch('https://dogapi.dog/api/v2/facts');
 
         } else if (param === 'groups') {
-            response = await fetch('https://dogapi.dog/api/v2/groups')
+            response = await fetch('https://dogapi.dog/api/v2/groups');
         } else {
             response = await fetch('https://dogapi.dog/api/v2/breeds/' + param);
         }
@@ -40,20 +40,20 @@ Task:
 app.get('/breeds', async (req, res) => {
     try {
         const apiResponse = await getDogAPIResponse();
-        const htmlFile = fs.readFileSync('./HTMLTemplate/breeds.html','utf8')
-        const tailwindListCSS = "inline-flex items-center gap-x-2 py-3 px-4 text-sm font-medium bg-white border border-gray-200 text-gray-800 -mt-px first:rounded-t-lg first:mt-0 last:rounded-b-lg"
-        const dogListhtml = apiResponse.data.map((dog) => `<li class="${tailwindListCSS}"><a href= "/breeds/${dog.id}">${dog.attributes.name}</a></li>`).join("")
-        const updatedHTML = htmlFile.replace('{{%dogList%}}',dogListhtml)
-        
+        const htmlFile = fs.readFileSync('./HTMLTemplate/breeds.html', 'utf8');
+        const tailwindListCSS = "inline-flex items-center gap-x-2 py-3 px-4 text-sm font-medium bg-white border border-gray-200 text-gray-800 -mt-px first:rounded-t-lg first:mt-0 last:rounded-b-lg";
+        const dogListhtml = apiResponse.data.map((dog) => `<li class="${tailwindListCSS}"><a href= "/breeds/${dog.id}">${dog.attributes.name}</a></li>`).join("");
+        const updatedHTML = htmlFile.replace('{{%dogList%}}', dogListhtml);
+
         res.type('text/html');
         res.send(updatedHTML);
 
     } catch (err) {
-        console.log(err)
+        console.log(err);
         res.status(500).send("Server Error");
     }
 });
- 
+
 /*
 Part 3: Displaying Detailed Breed Information
 
@@ -72,16 +72,16 @@ app.get('/breeds/:id', async (req, res) => {
         const apiResponse = await getDogAPIResponse(param.id);
         // console.log(apiResponse.data);
         const dogAttributes = apiResponse.data.attributes;
-        let htmlFile = fs.readFileSync('./HTMLTemplate/breed-info.html', 'utf8')
+        let htmlFile = fs.readFileSync('./HTMLTemplate/breed-info.html', 'utf8');
         //console.log(dogAttributes)
         // Replace sections of html
-        htmlFile = htmlFile.replace('{{%breedName%}}',dogAttributes.name)
+        htmlFile = htmlFile.replace('{{%breedName%}}', dogAttributes.name);
         htmlFile = htmlFile.replace('{{%description%}}', dogAttributes.description);
-        htmlFile = htmlFile.replace('{{%life.min%}}', dogAttributes.life.min)
-        htmlFile = htmlFile.replace('{{%life.max%}}', dogAttributes.life.max)
-        htmlFile = htmlFile.replace('{{%hypoallergenic%}}', dogAttributes.hypoallergenic? "Yes :)": "No :(")
+        htmlFile = htmlFile.replace('{{%life.min%}}', dogAttributes.life.min);
+        htmlFile = htmlFile.replace('{{%life.max%}}', dogAttributes.life.max);
+        htmlFile = htmlFile.replace('{{%hypoallergenic%}}', dogAttributes.hypoallergenic ? "Yes :)" : "No :(");
 
-        res.type('text/html')
+        res.type('text/html');
         res.send(htmlFile);
     } catch (err) {
         console.log(err);
@@ -115,15 +115,13 @@ Tasks:
 [x] Display these facts in an interesting format on the webpage.
 [x] Use the /groups endpoint to fetch information about dog groups and display it.
 */
-app.get('/facts', async (req, res) => {
+app.get('/fact', async (req, res) => {
     try {
         const apiResponse = await getDogAPIResponse('facts');
         const factObj = apiResponse.data[0];
-        console.log(factObj)
-        let htmlFile = fs.readFileSync('./HTMLTemplate/facts.html', 'utf8')
-        htmlFile = htmlFile.replace("{{%dogFact%}}",factObj.attributes.body)
-        
-
+        console.log(factObj);
+        let htmlFile = fs.readFileSync('./HTMLTemplate/fact.html', 'utf8');
+        htmlFile = htmlFile.replace("{{%dogFact%}}", factObj.attributes.body);
         res.type('text/html');
         res.send(htmlFile);
         //console.log(factObj);
@@ -133,31 +131,70 @@ app.get('/facts', async (req, res) => {
     }
 });
 
-app.get('/groups', async(req,res) => {
+app.get('/facts', async (req, res) => {
     try {
-        const apiResponse = await getDogAPIResponse('groups')
-        let htmlFile = fs.readFileSync('./HTMLTemplate/groups.html', 'utf8')
-        const tailwindListCSS = "inline-flex items-center gap-x-2 py-3 px-4 text-sm font-medium bg-white border border-gray-200 text-gray-800 -mt-px first:rounded-t-lg first:mt-0 last:rounded-b-lg"
-        console.log(apiResponse.data)
-       
-        const dogGroupList = apiResponse.data.map((group) => `<li class='${tailwindListCSS}'>` + group.attributes.name + '</li>').join('')
-        htmlFile = htmlFile.replace('{{%dogList%}}',dogGroupList)
-        res.type('text/html')
-        res.send(htmlFile);
+
+        // Create list of dog facts
+        async function generateFactList(getAPIResponse, setMapSize) {
+            let mapSize = 0;
+            let mapFacts = new Map();
+
+            while (mapSize < setMapSize) {
+                const apiResponse = await getAPIResponse('facts');
+                const factObj = apiResponse.data[0];
+                const factID = factObj.id;
+                //console.log(factObj);
+                if (!mapFacts.has(factID)) { // Check if ID in map
+                    mapFacts.set(factID, factObj.attributes.body);
+                    mapSize += 1;
+                }
+            }
+            return mapFacts
+        }
+        const factListMap = await generateFactList(getDogAPIResponse, 6)
+        //console.log(factListMap)
+
+        const htmlFile = fs.readFileSync('./HTMLTemplate/facts.html', 'utf8');
+        const tailwindListCSS = "inline-flex items-center gap-x-2 py-3 px-4 text-sm font-medium bg-white border border-gray-200 text-gray-800 -mt-px first:rounded-t-lg first:mt-0 last:rounded-b-lg";
+        const factListArr = Array.from(factListMap.values())
+        const dogListhtml = factListArr.map((fact) => `<li class="${tailwindListCSS}">${fact}</li>`).join("");
+        const updatedHTML = htmlFile.replace('{{%dogFactList%}}', dogListhtml);
+
+        res.type('text/html');
+        res.send(updatedHTML);
 
 
-    } catch(err) {
+    } catch (err) {
         console.log("Error: ", err);
         res.status(500).send("Server Error");
     }
-})
+});
+
+app.get('/groups', async (req, res) => {
+    try {
+        const apiResponse = await getDogAPIResponse('groups');
+        let htmlFile = fs.readFileSync('./HTMLTemplate/groups.html', 'utf8');
+        const tailwindListCSS = "inline-flex items-center gap-x-2 py-3 px-4 text-sm font-medium bg-white border border-gray-200 text-gray-800 -mt-px first:rounded-t-lg first:mt-0 last:rounded-b-lg";
+        console.log(apiResponse.data);
+
+        const dogGroupList = apiResponse.data.map((group) => `<li class='${tailwindListCSS}'>` + group.attributes.name + '</li>').join('');
+        htmlFile = htmlFile.replace('{{%dogList%}}', dogGroupList);
+        res.type('text/html');
+        res.send(htmlFile);
+
+
+    } catch (err) {
+        console.log("Error: ", err);
+        res.status(500).send("Server Error");
+    }
+});
 
 app.use((req, res) => {
-    const htmlFile = fs.readFileSync('./HTMLTemplate/notFound.html', 'utf8')
+    const htmlFile = fs.readFileSync('./HTMLTemplate/notFound.html', 'utf8');
     res.type("text/html");
     res.status(404);
     res.send(htmlFile);
-}); 
+});
 
 app.listen(app.get('port'), () => {
     console.log(`Express running at ${port}`);
